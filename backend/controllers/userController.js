@@ -1,6 +1,8 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import User from "../models/userModel.js";
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import generateToken from '../utils/generateToken.js';
 
 // @desc    Auth user & get token
 // @route   POST /api/users/login
@@ -12,21 +14,10 @@ const authUser = asyncHandler(async (req, res) => {
 
     if(user && (await user.matchPassword(password))) {
 
-        // Create token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-            expiresIn: '30d'
-        });
-
-        // set JWT as httpOnly cookie
-        res.cookie('jwt', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV !== 'development',
-            sameSite: 'strict',
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        });
+        generateToken(res, user._id);
 
         // Send response
-        res.json({
+        res.status(200).json({
             id: user._id,
             name: user.name,
             email: user.email,
@@ -43,7 +34,44 @@ const authUser = asyncHandler(async (req, res) => {
 //@route POST /api/users
 //@access Public
 const registerUser = asyncHandler(async (req, res) => {
-    res.send('register user');
+
+    const { name, email, password } = req.body;
+
+    const userExists = await User.findOne({ email })
+    
+    if(userExists) {
+        res.status(400);
+        throw new Error('User already exists');
+    }
+
+    // Hash password before storing in database
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+
+    const user = await User.create({
+        name,
+        email,
+        password: passwordHash
+    });
+
+    if(user) {
+
+        // after user is created, send back a token
+        generateToken(res, user._id);
+
+        res.status(201).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin
+        });
+    }
+    else{
+        res.status(400);
+        throw new Error('Invalid user data');
+    }
+
 });
 
 //@desc Logout user and clear cookie
@@ -67,14 +95,51 @@ const logoutUser = asyncHandler(async (req, res) => {
 //@route GET /api/users/profile
 //@access Private
 const getUserProfile = asyncHandler(async (req, res) => {
-    res.send('get user profile');
+    console.log(req.user);
+    const user = await User.findById(req.user._id);
+
+    if(user) {
+        res.status(200).json({ 
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin
+        });
+    }
+    else {
+        res.status(404);
+        throw new Error('User not found');
+    }
 });
 
 //@desc Update user profile
 //@route PUT /api/users/profile
 //@access Private
 const updateUserProfile = asyncHandler(async (req, res) => {
-    res.send('update user profile');
+    const user = await User.findById(req.user._id);
+
+    if(user) {
+        user.name = req.body.name || user.name;
+        user.email = req.body.email || user.email;
+
+        if(req.body.password) {
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(req.body.password, salt);
+        }
+
+        const updatedUser = await user.save();
+
+        res.status(200).json({ 
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            isAdmin: updatedUser.isAdmin
+        });
+    }
+    else {
+        res.status(404);
+        throw new Error('User not found');
+    }
 });
 
 //@desc Get all users
