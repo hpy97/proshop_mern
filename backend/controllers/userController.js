@@ -95,7 +95,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 //@route GET /api/users/profile
 //@access Private
 const getUserProfile = asyncHandler(async (req, res) => {
-    console.log(req.user);
+
     const user = await User.findById(req.user._id);
 
     if(user) {
@@ -119,6 +119,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if(user) {
+
+        // update user data 
         user.name = req.body.name || user.name;
         user.email = req.body.email || user.email;
 
@@ -127,8 +129,10 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             user.password = await bcrypt.hash(req.body.password, salt);
         }
 
+        // save updated user data in DB
         const updatedUser = await user.save();
 
+        // send updated data in response 
         res.status(200).json({ 
             _id: updatedUser._id,
             name: updatedUser.name,
