@@ -96,10 +96,29 @@ const cartSlice = createSlice({
             state.totalPrice = addDecimal(Number(state.itemsPrice) + Number(state.shippingPrice) + Number(state.taxPrice));
 
             localStorage.setItem("cart", JSON.stringify(state));  // Save the cart to the local storage
+        },
+        clearCartItems: (state, action) => {
+            state.cartItems = [];
+
+            // calculate items price
+            state.itemsPrice = addDecimal(state.cartItems.reduce((acc, item) => {
+                return acc + item.price * item.qty;
+            }, 0));
+
+            // calculate shipping price (if order price is greater than 100, shipping is free else 10)
+            state.shippingPrice = addDecimal(state.itemsPrice > 100 ? 0 : 10);
+
+            // calculate tax price (15% tax)
+            state.taxPrice = addDecimal(Number((0.15 * state.itemsPrice).toFixed(2)));
+
+            // calculate the total price (items price + shipping price + tax price)
+            state.totalPrice = addDecimal(Number(state.itemsPrice) + Number(state.shippingPrice) + Number(state.taxPrice));
+
+            localStorage.setItem("cart", JSON.stringify(state));  // Save the cart to the local storage
         }
     }    
 }); 
 
-export const { addToCart, removeFromCart, saveShippingAddress, savePaymentMethod } = cartSlice.actions;  // Export the addToCart action
+export const { addToCart, removeFromCart, saveShippingAddress, savePaymentMethod, clearCartItems } = cartSlice.actions;  
 
 export default cartSlice.reducer;  // Export the reducer
