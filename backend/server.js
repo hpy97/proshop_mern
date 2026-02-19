@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 dotenv.config();
 import connectDB from './config/db.js';
 import productRoutes from './routes/productRoutes.js';
@@ -19,6 +20,16 @@ app.use(express.urlencoded({ extended: true }));
 
 // Middleware for parsing cookies
 app.use(cookieParser());
+
+// Configure CORS based on environment
+// const corsOptions = {
+//   origin: process.env.NODE_ENV === 'production' 
+//     ? [process.env.CLIENT_URL || 'http://localhost:3000']
+//     : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+//   credentials: true,
+//   optionsSuccessStatus: 200
+// };
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.send('API is running...');

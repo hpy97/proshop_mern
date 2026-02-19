@@ -50,11 +50,11 @@ const OrderDetailsScreen = () => {
         }
     }, [order, paypal, errorPaypal, loadingPayPal])
 
-    const onApproveTest = async () => {
-        await payOrder({ orderId, details: { payer: {} } });
-        refetch();
-        toast.success('Payment Successful');
-    }
+    // const onApproveTest = async () => {
+    //     await payOrder({ orderId, details: { payer: {} } });
+    //     refetch();
+    //     toast.success('Payment Successful');
+    // }
 
     const onApprove = (data, actions) => {
         // triggers paypal
@@ -177,12 +177,12 @@ const OrderDetailsScreen = () => {
                                         {isPending ? <Loader/> :
                                             (
                                                 <div>
-                                                    <Button 
+                                                    {/* <Button 
                                                         onClick={onApproveTest}
                                                         style={{ marginBottom: '10px' }}
                                                     >
                                                         Test Pay Order
-                                                    </Button>
+                                                    </Button> */}
                                                     <div>
                                                         <PayPalButtons
                                                             createOrder={createOrder}
