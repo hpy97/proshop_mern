@@ -22,13 +22,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Configure CORS based on environment
-// const corsOptions = {
-//   origin: process.env.NODE_ENV === 'production' 
-//     ? [process.env.CLIENT_URL || 'http://localhost:3000']
-//     : ['http://localhost:3000', 'http://127.0.0.1:3000'],
-//   credentials: true,
-//   optionsSuccessStatus: 200
-// };
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? [process.env.CLIENT_URL || 'http://localhost:3000']
+    : ['http://localhost:3000', 'http://localhost:5000'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
 app.use(cors());
 
 app.get('/', (req, res) => {
