@@ -27,7 +27,7 @@ function HomeScreen() {
         <Message variant={'danger'}>{error?.data?.message || error.error}</Message>
       ) : (
         <>
-          <h1>Latest Products</h1>
+          <h1>Harshal's Products</h1>
           <Row>
             {products.map((item, index) => (
               <Col key={item._id} sm={12} md={6} lg={4} xl={3}>
